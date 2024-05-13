@@ -5,6 +5,10 @@ var buttonOff = document.getElementById("button-off")
 var deviceStatus = document.getElementById("device-status")
 var buttonReconnect = document.getElementById("button-reconnect")
 
+var buttonStartWeightSensor = document.getElementById("button-start-weight-sensor")
+var buttonInitWeightSensor = document.getElementById("button-init-weight-sensor")
+var buttonStopWeightSensor = document.getElementById("button-stop-weight-sensor")
+var weightSensorData = document.getElementById("weight-sensor-data")
 
 
 var SOCKET_URL = "ws://192.168.254.64:8080"
@@ -14,7 +18,11 @@ const ActionType =  {
   TURN_ON_LED: 'TURN_ON_LED',
   TURN_OFF_LED : 'TURN_OFF_LED',
   REQUEST_DEVICE_STATUS : 'REQUEST_DEVICE_STATUS',
-  RESPOND_DEVICE_STATUS : 'RESPOND_DEVICE_STATUS'
+  RESPOND_DEVICE_STATUS : 'RESPOND_DEVICE_STATUS',
+  INIT_WEIGHT_SENSOR : 'INIT_WEIGHT_SENSOR',
+  START_WEIGHT_SENSOR : 'START_WEIGHT_SENSOR',
+  STOP_WEIGHT_SENSOR : 'STOP_WEIGHT_SENSOR',
+  WEIGHT_SENSOR_DATA : 'WEIGHT_SENSOR_DATA'
 }
 
 
@@ -35,6 +43,18 @@ function initEvents(){
         initWebSocket()
     }, false);
 
+    buttonInitWeightSensor.addEventListener("click", function() {
+        send(ActionType.INIT_WEIGHT_SENSOR);
+    }, false);
+
+    buttonStartWeightSensor.addEventListener("click", function() {
+        send(ActionType.START_WEIGHT_SENSOR);
+    }, false);
+
+    buttonStopWeightSensor.addEventListener("click", function() {
+        send(ActionType.STOP_WEIGHT_SENSOR);
+    }, false);
+
     setInterval(function() {
         send(ActionType.REQUEST_DEVICE_STATUS)
     }, 1000);
@@ -52,7 +72,7 @@ function initWebSocket() {
 
     ws.onmessage = function (evt) { 
         var data = evt.data;
-        serverLogs.innerText = data;
+        // serverLogs.innerText = data;
         
         console.log(data)
 
@@ -69,6 +89,8 @@ function initWebSocket() {
                     buttonOff.disabled = false
                 }
                 break
+            case ActionType.WEIGHT_SENSOR_DATA:
+                weightSensorData.innerText = jsonObj.body
 
         }
 

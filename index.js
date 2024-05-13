@@ -24,6 +24,10 @@ const ActionType = {
   REQUEST_DEVICE_STATUS: "REQUEST_DEVICE_STATUS",
   RESPOND_DEVICE_STATUS: "RESPOND_DEVICE_STATUS",
   DEVICE_HEART_BEAT: "DEVICE_HEART_BEAT",
+  INIT_WEIGHT_SENSOR : "INIT_WEIGHT_SENSOR",
+  START_WEIGHT_SENSOR : "START_WEIGHT_SENSOR",
+  STOP_WEIGHT_SENSOR : "STOP_WEIGHT_SENSOR",
+  WEIGHT_SENSOR_DATA : "WEIGHT_SENSOR_DATA"
 };
 
 wss.on("connection", function connection(ws, req) {
@@ -66,12 +70,28 @@ wss.on("connection", function connection(ws, req) {
         heartbeat()
         break;
 
+      case ActionType.WEIGHT_SENSOR_DATA:
+        broadcastData(jsonData)
+        break;
+
       case ActionType.TURN_ON_LED:
         turnOnLED();
         break;
 
       case ActionType.TURN_OFF_LED:
         turnOffLED();
+        break;
+
+      case ActionType.INIT_WEIGHT_SENSOR:
+        initWeightSensor();
+        break;
+
+      case ActionType.START_WEIGHT_SENSOR:
+        startWeightSensor();
+        break;
+
+      case ActionType.STOP_WEIGHT_SENSOR:
+        stopWeightSensor();
         break;
     }
   });
@@ -165,6 +185,20 @@ function broadcastDeviceStatus() {
   // }
 }
 
+function broadcastData(data){
+  wss.clients.forEach(function (client){
+    if(client != wsDeviceNodeMCU){
+        client.send(
+          getResponseData(
+            data.actionType,
+            data.body
+          )
+        )
+
+    }
+  })
+}
+
 function turnOnLED() {
   sendDataToNodeMCU(ActionType.TURN_ON_LED);
 }
@@ -172,3 +206,16 @@ function turnOnLED() {
 function turnOffLED() {
   sendDataToNodeMCU(ActionType.TURN_OFF_LED);
 }
+
+function initWeightSensor() {
+  sendDataToNodeMCU(ActionType.INIT_WEIGHT_SENSOR);
+}
+
+function startWeightSensor() {
+  sendDataToNodeMCU(ActionType.START_WEIGHT_SENSOR);
+}
+
+function stopWeightSensor() {
+  sendDataToNodeMCU(ActionType.STOP_WEIGHT_SENSOR);
+}
+
