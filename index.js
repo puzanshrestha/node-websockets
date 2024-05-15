@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import express from "express";
 
 const app = express();
-const port = 3000;
+const port = 13000;
 
 app.use(express.static("./"));
 
@@ -16,7 +16,7 @@ app.listen(port, () => {
 
 const wss = new WebSocketServer({ port: 8080 });
 const DEVICE_NODE_MCU_ID = "NODE-MCU-1212";
-var wsDeviceNodeMCU
+var wsDeviceNodeMCU;
 
 const ActionType = {
   TURN_ON_LED: "TURN_ON_LED",
@@ -24,10 +24,10 @@ const ActionType = {
   REQUEST_DEVICE_STATUS: "REQUEST_DEVICE_STATUS",
   RESPOND_DEVICE_STATUS: "RESPOND_DEVICE_STATUS",
   DEVICE_HEART_BEAT: "DEVICE_HEART_BEAT",
-  INIT_WEIGHT_SENSOR : "INIT_WEIGHT_SENSOR",
-  START_WEIGHT_SENSOR : "START_WEIGHT_SENSOR",
-  STOP_WEIGHT_SENSOR : "STOP_WEIGHT_SENSOR",
-  WEIGHT_SENSOR_DATA : "WEIGHT_SENSOR_DATA"
+  INIT_WEIGHT_SENSOR: "INIT_WEIGHT_SENSOR",
+  START_WEIGHT_SENSOR: "START_WEIGHT_SENSOR",
+  STOP_WEIGHT_SENSOR: "STOP_WEIGHT_SENSOR",
+  WEIGHT_SENSOR_DATA: "WEIGHT_SENSOR_DATA",
 };
 
 wss.on("connection", function connection(ws, req) {
@@ -35,7 +35,7 @@ wss.on("connection", function connection(ws, req) {
 
   let clientId = headers["client_id"];
 
-  if(clientId == DEVICE_NODE_MCU_ID){
+  if (clientId == DEVICE_NODE_MCU_ID) {
     wsDeviceNodeMCU = ws;
   }
   let heartbeatTimeout;
@@ -46,7 +46,6 @@ wss.on("connection", function connection(ws, req) {
       console.log("NodeMCU disconnected");
       ws.terminate();
       broadcastDeviceStatus();
-
     }, 5000);
   }
   broadcastDeviceStatus();
@@ -61,17 +60,16 @@ wss.on("connection", function connection(ws, req) {
     }
 
     switch (jsonData.actionType) {
-
       case ActionType.REQUEST_DEVICE_STATUS:
-        broadcastDeviceStatus()
+        broadcastDeviceStatus();
         break;
 
       case ActionType.DEVICE_HEART_BEAT:
-        heartbeat()
+        heartbeat();
         break;
 
       case ActionType.WEIGHT_SENSOR_DATA:
-        broadcastData(jsonData)
+        broadcastData(jsonData);
         break;
 
       case ActionType.TURN_ON_LED:
@@ -108,7 +106,7 @@ function parseJsonObject(data) {
 
     return jsonObj;
   } catch (ex) {
-    // console.log(ex)
+    console.log(ex);
   }
 }
 
@@ -117,8 +115,7 @@ function sendDataToNodeMCU(actionType, body = "") {
   data.actionType = actionType;
   data.body = body;
 
-  if (wsDeviceNodeMCU != undefined)
-    wsDeviceNodeMCU.send(JSON.stringify(data));
+  if (wsDeviceNodeMCU != undefined) wsDeviceNodeMCU.send(JSON.stringify(data));
 }
 
 function getResponseData(actionType, body = "") {
@@ -144,26 +141,25 @@ function getReadyStateString(state) {
 }
 
 function broadcastDeviceStatus() {
-
-  wss.clients.forEach(function (client){
-    if(client != wsDeviceNodeMCU){
-      if(wsDeviceNodeMCU == undefined){
+  wss.clients.forEach(function (client) {
+    if (client != wsDeviceNodeMCU) {
+      if (wsDeviceNodeMCU == undefined) {
         client.send(
           getResponseData(
             ActionType.RESPOND_DEVICE_STATUS,
             getReadyStateString(WebSocket.CLOSED)
           )
-        )
-      }else{
+        );
+      } else {
         client.send(
           getResponseData(
             ActionType.RESPOND_DEVICE_STATUS,
             getReadyStateString(wsDeviceNodeMCU.readyState)
           )
-        )
+        );
       }
     }
-  })
+  });
 
   // for (const [key, ws] of Object.entries(clients)) {
   //   if (key != DEVICE_NODE_MCU_ID) {
@@ -174,7 +170,7 @@ function broadcastDeviceStatus() {
   //           getReadyStateString(clients[DEVICE_NODE_MCU_ID].readyState)
   //         )
   //       )
-  //     else 
+  //     else
   //       ws.send(
   //         getResponseData(
   //           ActionType.RESPOND_DEVICE_STATUS,
@@ -185,18 +181,12 @@ function broadcastDeviceStatus() {
   // }
 }
 
-function broadcastData(data){
-  wss.clients.forEach(function (client){
-    if(client != wsDeviceNodeMCU){
-        client.send(
-          getResponseData(
-            data.actionType,
-            data.body
-          )
-        )
-
+function broadcastData(data) {
+  wss.clients.forEach(function (client) {
+    if (client != wsDeviceNodeMCU) {
+      client.send(getResponseData(data.actionType, data.body));
     }
-  })
+  });
 }
 
 function turnOnLED() {
@@ -218,4 +208,3 @@ function startWeightSensor() {
 function stopWeightSensor() {
   sendDataToNodeMCU(ActionType.STOP_WEIGHT_SENSOR);
 }
-
