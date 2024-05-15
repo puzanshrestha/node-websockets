@@ -106,7 +106,7 @@ function parseJsonObject(data) {
 
     return jsonObj;
   } catch (ex) {
-    console.log(ex);
+    // console.log(ex)
   }
 }
 
