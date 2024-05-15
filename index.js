@@ -1,8 +1,12 @@
 import { WebSocketServer, WebSocket } from "ws";
 import express from "express";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
-const port = 13000;
+const port = process.env.PORT;
+const socket_port = process.env.SOCKET_PORT;
 
 app.use(express.static("./"));
 
@@ -14,7 +18,7 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
 
-const wss = new WebSocketServer({ port: 8080 });
+const wss = new WebSocketServer({ port: socket_port });
 const DEVICE_NODE_MCU_ID = "NODE-MCU-1212";
 var wsDeviceNodeMCU;
 
