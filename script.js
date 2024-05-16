@@ -4,8 +4,8 @@ var buttonOn = document.getElementById("button-on");
 var buttonOff = document.getElementById("button-off");
 var deviceStatus = document.getElementById("device-status");
 var buttonReconnect = document.getElementById("button-reconnect");
-// import dotenv from "dotenv";
-// dotenv.config();
+
+require("dotenv").config();
 
 var buttonStartWeightSensor = document.getElementById(
   "button-start-weight-sensor"
