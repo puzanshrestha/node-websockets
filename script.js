@@ -4,8 +4,8 @@ var buttonOn = document.getElementById("button-on");
 var buttonOff = document.getElementById("button-off");
 var deviceStatus = document.getElementById("device-status");
 var buttonReconnect = document.getElementById("button-reconnect");
-
-require("dotenv").config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
 var buttonStartWeightSensor = document.getElementById(
   "button-start-weight-sensor"
@@ -18,8 +18,8 @@ var buttonStopWeightSensor = document.getElementById(
 );
 var weightSensorData = document.getElementById("weight-sensor-data");
 
-var SOCKET_URL = process.env.SOCKET_URL;
-// var SOCKET_URL = "ws://13.234.144.51:8080";
+// var SOCKET_URL = process.env.SOCKET_URL;
+var SOCKET_URL = "ws://13.234.144.51:8080";
 var ws;
 
 const ActionType = {
