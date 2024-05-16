@@ -19,7 +19,7 @@ var buttonStopWeightSensor = document.getElementById(
 var weightSensorData = document.getElementById("weight-sensor-data");
 
 // var SOCKET_URL = process.env.SOCKET_URL;
-var SOCKET_URL = "ws://192.168.1.67:8080";
+var SOCKET_URL = "ws://13.234.144.51:8080";
 var ws;
 
 const ActionType = {
