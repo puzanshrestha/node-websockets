@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket } from "ws";
 import express from "express";
 import dotenv from "dotenv";
+import QRCode from "qrcode";
 
 dotenv.config();
 
@@ -37,22 +38,97 @@ const ActionType = {
 wss.on("connection", function connection(ws, req) {
   let headers = req.headers;
 
-  let clientId = headers["client_id"];
+  console.log("Client connected");
 
-  if (clientId == DEVICE_NODE_MCU_ID) {
-    wsDeviceNodeMCU = ws;
-  }
-  let heartbeatTimeout;
+  // Send a plain text message after connection
+  ws.send("Hello from WebSocket server!");
 
-  function heartbeat() {
-    clearTimeout(heartbeatTimeout);
-    heartbeatTimeout = setTimeout(() => {
-      console.log("NodeMCU disconnected");
-      ws.terminate();
-      broadcastDeviceStatus();
-    }, 5000);
-  }
-  broadcastDeviceStatus();
+  ws.on("message", function incoming(message) {
+    const receivedMessage = message.toString("utf8");
+    console.log("Received message from client:", receivedMessage);
+  });
+
+  // Handle incoming messages from the client (optional)
+  ws.on("message", function message(message) {
+    const url = message.toString("utf8");
+    QRCode.toDataURL(url, async (err, dataUrl) => {
+      if (err) {
+        console.error("Error generating QR code:", err);
+        return;
+      }
+
+      // Convert QR code data URL to base64
+      const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+      const buffer = Buffer.from(base64Data, "base64");
+
+      // Check WebSocket ready state before sending data
+
+      console.log("sssss (ws.readyState: ", ws.readyState);
+      console.log("sssss WebSocket.OPEN: ", WebSocket.OPEN);
+
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.send(buffer, { binary: true }, (err) => {
+          if (err) {
+            console.error("Error sending QR code:", err);
+          } else {
+            console.log("QR code sent to client");
+          }
+        });
+      } else {
+        console.error("WebSocket is not open. Unable to send QR code.");
+      }
+    });
+  });
+
+  // // Wait for 5 seconds after WebSocket connection is established
+  // setTimeout(() => {
+  // Generate QR code for the specified URL
+  // const url = "https://api-market.neumo.me/api";
+  // QRCode.toDataURL(url, async (err, dataUrl) => {
+  //   if (err) {
+  //     console.error("Error generating QR code:", err);
+  //     return;
+  //   }
+
+  //   // Convert QR code data URL to base64
+  //   const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+  //   const buffer = Buffer.from(base64Data, "base64");
+
+  //   // Check WebSocket ready state before sending data
+
+  //   console.log("sssss (ws.readyState: ", ws.readyState);
+  //   console.log("sssss WebSocket.OPEN: ", WebSocket.OPEN);
+
+  //   if (ws.readyState === WebSocket.OPEN) {
+  //     ws.send(buffer, { binary: true }, (err) => {
+  //       if (err) {
+  //         console.error("Error sending QR code:", err);
+  //       } else {
+  //         console.log("QR code sent to client");
+  //       }
+  //     });
+  //   } else {
+  //     console.error("WebSocket is not open. Unable to send QR code.");
+  //   }
+  // });
+  // }, 5000);
+
+  // let clientId = headers["client_id"];
+
+  // if (clientId == DEVICE_NODE_MCU_ID) {
+  //   wsDeviceNodeMCU = ws;
+  // }
+  // let heartbeatTimeout;
+
+  // function heartbeat() {
+  //   clearTimeout(heartbeatTimeout);
+  //   heartbeatTimeout = setTimeout(() => {
+  //     console.log("NodeMCU disconnected");
+  //     ws.terminate();
+  //     broadcastDeviceStatus();
+  //   }, 5000);
+  // }
+  // broadcastDeviceStatus();
 
   ws.on("message", function message(data) {
     console.log("received: %s", data);
@@ -63,39 +139,39 @@ wss.on("connection", function connection(ws, req) {
       return;
     }
 
-    switch (jsonData.actionType) {
-      case ActionType.REQUEST_DEVICE_STATUS:
-        broadcastDeviceStatus();
-        break;
+    // switch (jsonData.actionType) {
+    //   case ActionType.REQUEST_DEVICE_STATUS:
+    //     broadcastDeviceStatus();
+    //     break;
 
-      case ActionType.DEVICE_HEART_BEAT:
-        heartbeat();
-        break;
+    //   case ActionType.DEVICE_HEART_BEAT:
+    //     heartbeat();
+    //     break;
 
-      case ActionType.WEIGHT_SENSOR_DATA:
-        broadcastData(jsonData);
-        break;
+    //   case ActionType.WEIGHT_SENSOR_DATA:
+    //     broadcastData(jsonData);
+    //     break;
 
-      case ActionType.TURN_ON_LED:
-        turnOnLED();
-        break;
+    //   case ActionType.TURN_ON_LED:
+    //     turnOnLED();
+    //     break;
 
-      case ActionType.TURN_OFF_LED:
-        turnOffLED();
-        break;
+    //   case ActionType.TURN_OFF_LED:
+    //     turnOffLED();
+    //     break;
 
-      case ActionType.INIT_WEIGHT_SENSOR:
-        initWeightSensor();
-        break;
+    //   case ActionType.INIT_WEIGHT_SENSOR:
+    //     initWeightSensor();
+    //     break;
 
-      case ActionType.START_WEIGHT_SENSOR:
-        startWeightSensor();
-        break;
+    //   case ActionType.START_WEIGHT_SENSOR:
+    //     startWeightSensor();
+    //     break;
 
-      case ActionType.STOP_WEIGHT_SENSOR:
-        stopWeightSensor();
-        break;
-    }
+    //   case ActionType.STOP_WEIGHT_SENSOR:
+    //     stopWeightSensor();
+    //     break;
+    // }
   });
 });
 
